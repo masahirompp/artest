@@ -1,9 +1,5 @@
 /// <reference path="../../../typings/bundle.d.ts" />
 
-import THREE = require('three');
-
-console.log('test');
-
 var $video, $canvas, $context, imageData, detector, posit;
 var modelSize = 35.0; //millimeters
 
