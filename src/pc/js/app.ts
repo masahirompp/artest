@@ -86,6 +86,7 @@ function start(detector, posit) {
       var imageData = $context.getImageData(0, 0, $canvas.width, $canvas.height);
       var markers = detector.detect(imageData);
       drawCorners(markers);
+      cleanModel();
       updateScenes(markers);
 
       if (markers.length === 2 && !result) {
@@ -96,6 +97,16 @@ function start(detector, posit) {
 
       render();
     }
+  };
+
+  function cleanModel(){
+    hidarigu.position.x = 100000;
+    hidaripa.position.x = 100000;
+    hidarityoki.position.x = 100000;
+    migigu.position.x = 100000;
+    migipa.position.x = 100000;
+    migityoki.position.x = 100000;
+
   };
 
   function updateScenes(markers) {
@@ -114,14 +125,23 @@ function start(detector, posit) {
 
         pose = posit.pose(corners);
 
-        if (i == 0) {
-          updateObject(migipa, pose.bestRotation, pose.bestTranslation);
-        } else if (i == 1) {
-          updateObject(migityoki, pose.bestRotation, pose.bestTranslation);
-        } else {
-          updateObject(migigu, pose.bestRotation, pose.bestTranslation);
+        if(i == 0){
+          if (markers[i].id == JANKEN_GOO.id) {
+            updateObject(migigu, pose.bestRotation, pose.bestTranslation);
+          } else if (markers[i].id == JANKEN_CHOKI.id) {
+            updateObject(migityoki, pose.bestRotation, pose.bestTranslation);
+          } else {
+            updateObject(migipa, pose.bestRotation, pose.bestTranslation);
+          }
+        }else{
+          if (markers[i].id == JANKEN_GOO.id) {
+            updateObject(hidarigu, pose.bestRotation, pose.bestTranslation);
+          } else if (markers[i].id == JANKEN_CHOKI.id) {
+            updateObject(hidarityoki, pose.bestRotation, pose.bestTranslation);
+          } else {
+            updateObject(hidaripa, pose.bestRotation, pose.bestTranslation);
+          }
         }
-
       }
     }
 
