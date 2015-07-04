@@ -124,6 +124,11 @@ function createScenes() {
   scene3.add(texture);
 
   model = createModel();
+
+
+  var light = new THREE.DirectionalLight(0xffffff);
+  light.position.set(1, 1, 1).normalize();
+  scene4.add(light);
   scene4.add(model);
 };
 
@@ -153,36 +158,56 @@ function createTexture() {
 };
 
 function createModel() {
-  var object = new THREE.Object3D(),
-    geometry = new THREE.SphereGeometry(0.5, 15, 15, Math.PI),
-    texture = THREE.ImageUtils.loadTexture("/images/frontainer.png"),
-    material = new THREE.MeshBasicMaterial({ map: texture }),
-    mesh = new THREE.Mesh(geometry, material);
+  var object = new THREE.Object3D();
+  var geometry = new THREE.SphereGeometry(1, 40, 40, Math.PI);
+  var material = new THREE.MeshPhongMaterial({ color: 0xfff1cf });
+  var cube = new THREE.Mesh( geometry, material );
 
-  object.add(mesh);
+  var circleGeometry = new THREE.CylinderGeometry( 0.7, 0.7, 1,32 );
+  var circle = new THREE.Mesh( circleGeometry, material );
+  circle.position.x = -1
+  circle.rotation.x = 0
+  circle.rotation.y = 0
+  circle.rotation.z = 1.6
+
+  var hitosasiyubiGeometry = new THREE.CylinderGeometry( 0.2, 0.2, 2.3, 32 );
+  var hitosasiyubi = new THREE.Mesh( hitosasiyubiGeometry, material );
+  hitosasiyubi.position.x = 1
+  hitosasiyubi.position.y = 0
+  hitosasiyubi.position.z = 0.6
+  hitosasiyubi.rotation.y = -0.4
+  hitosasiyubi.rotation.z = 1.6
+
+  var nakayubiGeometry = new THREE.CylinderGeometry( 0.2, 0.2, 3, 32 );
+  var nakayubi = new THREE.Mesh( nakayubiGeometry, material );
+  nakayubi.position.x = 1
+  nakayubi.position.y = 0
+  nakayubi.position.z = 0
+  nakayubi.rotation.z = 1.6
+
+  object.add(cube);
+  object.add(circle);
+  object.add(hitosasiyubi);
+  object.add(nakayubi);
 
   return object;
 };
 function updateScenes(markers) {
-  var corners, corner, pose, i;
+  var corners, corner, pose, i, j;
 
   if (markers.length > 0) {
-    corners = markers[0].corners;
+      corners = markers[0].corners;
 
-    for (i = 0; i < corners.length; ++i) {
-      corner = corners[i];
+      for (j = 0; j < corners.length; ++j) {
+        corner = corners[j];
 
-      corner.x = corner.x - ($canvas.width / 2);
-      corner.y = ($canvas.height / 2) - corner.y;
-    }
+        corner.x = corner.x - ($canvas.width / 2);
+        corner.y = ($canvas.height / 2) - corner.y;
+      }
 
-    pose = posit.pose(corners);
+      pose = posit.pose(corners);
 
-    updateObject(model, pose.bestRotation, pose.bestTranslation);
-
-    step += 0.025;
-
-    model.rotation.z -= step;
+      updateObject(model, pose.bestRotation, pose.bestTranslation);
   }
 
   texture.children[0].material.map.needsUpdate = true;

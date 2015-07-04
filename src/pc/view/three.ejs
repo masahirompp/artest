@@ -1,44 +1,73 @@
 <html>
-	<head>
-		<title>My first Three.js app</title>
-		<style>
-			body { margin: 0; }
-			canvas { width: 100%; height: 100% }
-		</style>
-	</head>
-	<body>
-		<script src="http://threejs.org/build/three.min.js"></script>
-		<script>
-			var scene = new THREE.Scene();
-			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+  <head>
+    <title>My first Three.js app</title>
+    <style>
+      body { margin: 0; }
+      canvas { width: 100%; height: 100% }
+    </style>
+  </head>
+  <body>
+  <script src="lib/three.min.js"></script>
+  <script src="lib/orbitcontrols.js"></script>
+    <script>
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
-			var renderer = new THREE.WebGLRenderer();
-			renderer.setSize( window.innerWidth, window.innerHeight );
-			document.body.appendChild( renderer.domElement );
+      var renderer = new THREE.WebGLRenderer();
+      renderer.setSize( window.innerWidth, window.innerHeight );
+      document.body.appendChild( renderer.domElement );
 
-			var geometry = new THREE.SphereGeometry(1, 40, 40, Math.PI);
-			var material = new THREE.MeshLambertMaterial();
-			var cube = new THREE.Mesh( geometry, material );
-			scene.add( cube );
+      var geometry = new THREE.SphereGeometry(1, 40, 40, Math.PI);
+      var material = new THREE.MeshPhongMaterial({ color: 0xfff1cf });
+      var cube = new THREE.Mesh( geometry, material );
+      scene.add( cube );
 
-			var circleGeometry = new THREE.CylinderGeometry( 0.7, 0.7, 1,32 );
-			var circle = new THREE.Mesh( circleGeometry, material );
-			scene.add( circle );
-			circle.position.x = -1
-			circle.rotation.x = 0
-			circle.rotation.y = 0
-			circle.rotation.z = 1.6
+      var circleGeometry = new THREE.CylinderGeometry( 0.7, 0.7, 1,32 );
+      var circle = new THREE.Mesh( circleGeometry, material );
+      scene.add( circle );
+      circle.position.x = -1
+      circle.rotation.x = 0
+      circle.rotation.y = 0
+      circle.rotation.z = 1.6
 
+      var hitosasiyubiGeometry = new THREE.CylinderGeometry( 0.2, 0.2, 2.3, 32 );
+      var hitosasiyubi = new THREE.Mesh( hitosasiyubiGeometry, material );
+      scene.add( hitosasiyubi );
+      hitosasiyubi.position.x = 1
+      hitosasiyubi.position.y = 0
+      hitosasiyubi.position.z = 0.6
+      hitosasiyubi.rotation.y = -0.4
+      hitosasiyubi.rotation.z = 1.6
 
-			camera.position.z = 5;
+      var nakayubiGeometry = new THREE.CylinderGeometry( 0.2, 0.2, 3, 32 );
+      var nakayubi = new THREE.Mesh( nakayubiGeometry, material );
+      scene.add( nakayubi );
+      nakayubi.position.x = 1
+      nakayubi.position.y = 0
+      nakayubi.position.z = 0
+      nakayubi.rotation.z = 1.6
 
-			var render = function () {
-				requestAnimationFrame( render );
+      camera.position.z = 5;
+      controls = new THREE.OrbitControls(camera);
 
-				renderer.render(scene, camera);
-			};
+      var  axis = new THREE.AxisHelper(1000);
+    //sceneに追加
+     scene.add(axis);
+    // 位置設定
+     axis.position.set(0,0,1);
 
-			render();
-		</script>
-	</body>
+    var light = new THREE.DirectionalLight(0xffffff);
+    light.position.set(1, 1, 1).normalize();
+    scene.add( light );
+
+      var render = function () {
+        requestAnimationFrame( render );
+        controls.update();
+        renderer.clear();
+        renderer.render(scene, camera);
+      };
+
+      render();
+    </script>
+  </body>
 </html>
