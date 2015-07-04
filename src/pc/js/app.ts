@@ -66,7 +66,7 @@ function tick() {
     drawCorners(markers);
     updateScenes(markers);
 
-    if (markers.length === 2) {
+    if (markers.length === 2 && !result) {
       result = judge(markers);
       console.log(result);
     }
@@ -251,7 +251,7 @@ function judge(markers: Marker[]) {
   var left = tmp1 < tmp2 ? markers[0].id : markers[1].id;　// 画面左側の人の手
   var right = tmp1 > tmp2 ? markers[0].id : markers[1].id; // 画面右側の人の手
 
-  return 'left:' + left, + ', right:' + right;
+  return 'left:' + left + ', right:' + right;
 }
 
 function addCornerX(x, corner) {
