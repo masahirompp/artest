@@ -1,10 +1,8 @@
 /// <reference path="../../../typings/bundle.d.ts" />
 
-import THREE = require('three');
+import Marker = require('./Marker');
 
-console.log('test');
-
-var $video, $canvas, $context, imageData, detector, posit;
+var $video, $canvas, $context, detector, posit;
 var renderer;
 var scene3, scene4;
 var camera3, camera4;
@@ -32,8 +30,8 @@ function onLoad() {
     navigator.getUserMedia({ video: true, audio: false },
       /* webcamera取得成功時のコールバック */
       function(stream) {
-        if (window['webkitURL']) {
-          $video.src = window['webkitURL'].createObjectURL(stream);
+        if (window['URL']) {
+          $video.src = window['URL'].createObjectURL(stream);
         } else if ($video.mozSrcObject !== undefined) {
           $video.mozSrcObject = stream;
         } else {
@@ -57,22 +55,24 @@ function onLoad() {
 };
 
 /* 描画処理 */
+var result = null;
 function tick() {
   requestAnimationFrame(tick);
 
   if ($video.readyState === $video.HAVE_ENOUGH_DATA) {
-    snapshot();
+    $context.drawImage($video, 0, 0, $canvas.width, $canvas.height);
+    var imageData = $context.getImageData(0, 0, $canvas.width, $canvas.height);
     var markers = detector.detect(imageData);
     drawCorners(markers);
     updateScenes(markers);
 
+    if (markers.length === 2) {
+      result = judge(markers);
+      console.log(result);
+    }
+
     render();
   }
-};
-
-function snapshot() {
-  $context.drawImage($video, 0, 0, $canvas.width, $canvas.height);
-  imageData = $context.getImageData(0, 0, $canvas.width, $canvas.height);
 };
 
 function drawCorners(markers) {
@@ -218,3 +218,17 @@ function updatePose(id, error, rotation, translation) {
   + " roll: " + Math.round(roll * 180.0 / Math.PI);
 };
 window.onload = onLoad;
+
+function judge(markers: Marker[]) {
+  var tmp1 = markers[0].corners.reduce(addCornerX, 0); // marker1の座標
+  var tmp2 = markers[1].corners.reduce(addCornerX, 0); // marker2の座標
+
+  var left = tmp1 < tmp2 ? markers[0].id : markers[1].id;　// 画面左側の人の手
+  var right = tmp1 > tmp2 ? markers[0].id : markers[1].id; // 画面右側の人の手
+
+  return 'left:' + left, + ', right:' + right;
+}
+
+function addCornerX(x, corner) {
+  return x + corner.x;
+}
