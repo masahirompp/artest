@@ -21,6 +21,8 @@
         "!./node_modules/**/*"
     ],
     "files": [
-        "./app.ts"
+        "./app.ts",
+        "./orbitcontrols.ts",
+        "./three.ts"
     ]
 }
