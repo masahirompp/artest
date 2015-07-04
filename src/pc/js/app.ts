@@ -1,6 +1,9 @@
 /// <reference path="../../../typings/bundle.d.ts" />
 
-var $video, $canvas, $context, posit, detector;
+import Marker = require('./Marker');
+import Janken = require('./Janken');
+
+var $video, $canvas, $context;
 var modelSize = 35.0; //millimeters
 
 /* 画面初期化 */
@@ -23,39 +26,40 @@ function onLoad() {
     navigator.getUserMedia({ video: true, audio: false }, webCameraSuccessCallback, console.log.bind(console));
 
     // AR初期化
-    detector = new AR.Detector();
-    posit = new POS.Posit(modelSize, $canvas.width);
+    var detector = new AR.Detector();
+    var posit = new POS.Posit(modelSize, $canvas.width);
 
-    // ブラウザ描画に合わせてtickを実行
+    start(detector, posit);
+  }
+};
+
+/* メインループ開始 */
+var result = null;
+function start(detector, posit) {
+
+  /* 各反復の処理 */
+  function tick() {
     requestAnimationFrame(tick);
-  }
-};
 
-/* 描画処理 */
-function tick() {
+    if ($video.readyState === $video.HAVE_ENOUGH_DATA) {
+      $context.drawImage($video, 0, 0, $canvas.width, $canvas.height); // 画面にwebカメラの映像を描画
+      var imageData = $context.getImageData(0, 0, $canvas.width, $canvas.height); // 描画したイメージデータを取得
+      var markers = detector.detect(imageData); // イメージデータを解析。マーカを取得。
+      drawToMarkers(markers); // マーカーに対し描画を行う
+
+      // マーカーが２つの場合は勝敗判定
+      if (markers.length === 2 && !result) {
+        result = judge(markers);
+      }
+    }
+  };
+
+  // ブラウザ描画に合わせてtickを実行
   requestAnimationFrame(tick);
-
-  if ($video.readyState === $video.HAVE_ENOUGH_DATA) {
-    $context.drawImage($video, 0, 0, $canvas.width, $canvas.height); // 画面にwebカメラの映像を描画
-    var imageData = $context.getImageData(0, 0, $canvas.width, $canvas.height); // 描画したイメージデータを取得
-    var markers = detector.detect(imageData); // イメージデータを解析。マーカを取得。
-    drawToMarkers(markers); // マーカーに対し描画を行う
-  }
-};
-
-/* webカメラのストリームをdomに流し込む */
-function webCameraSuccessCallback(stream) {
-  if (window['URL']) {
-    $video.src = window['URL'].createObjectURL(stream);
-  } else if ($video.mozSrcObject !== undefined) {
-    $video.mozSrcObject = stream;
-  } else {
-    $video.src = stream;
-  }
-};
+}
 
 /* マーカーに描画する */
-function drawToMarkers(markers) {
+function drawToMarkers(markers: Marker[]) {
 
   var corners, corner, i, j;
 
@@ -77,6 +81,22 @@ function drawToMarkers(markers) {
 
     $context.strokeStyle = "green";
     $context.strokeRect(corners[0].x - 2, corners[0].y - 2, 4, 4);
+  }
+};
+
+function judge(markers: Marker[]) {
+  var tmp1 = markers[0];
+  var tmp2 = markers[1];
+}
+
+/* webカメラのストリームをdomに流し込む */
+function webCameraSuccessCallback(stream) {
+  if (window['URL']) {
+    $video.src = window['URL'].createObjectURL(stream);
+  } else if ($video.mozSrcObject !== undefined) {
+    $video.mozSrcObject = stream;
+  } else {
+    $video.src = stream;
   }
 };
 

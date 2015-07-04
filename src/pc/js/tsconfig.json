@@ -21,8 +21,9 @@
         "!./node_modules/**/*"
     ],
     "files": [
+        "./Janken.ts",
+        "./Marker.ts",
         "./app.ts",
-        "./orbitcontrols.ts",
         "./three.ts"
     ]
 }
