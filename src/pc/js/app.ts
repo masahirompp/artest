@@ -4,138 +4,86 @@ import THREE = require('three');
 
 console.log('test');
 
-var video, canvas, context, imageData, detector, posit;
-var renderer1, renderer2, renderer3;
-var scene1, scene2, scene3, scene4;
-var camera1, camera2, camera3, camera4;
-var plane1, plane2, model, texture;
-var step = 0.0;
+var $video, $canvas, $context, imageData, detector, posit;
 var modelSize = 35.0; //millimeters
+
+/* 画面初期化 */
 function onLoad() {
-  video = document.getElementById("video");
-  canvas = document.getElementById("canvas");
-  context = canvas.getContext("2d");
 
-  canvas.width = parseInt(canvas.style.width);
-  canvas.height = parseInt(canvas.style.height);
+  // dom取得
+  $video = document.getElementById("video");
+  $canvas = document.getElementById("canvas");
+  $context = $canvas.getContext("2d");
 
+  // canvasのサイズを設定
+  $canvas.width = 640;
+  $canvas.height = 480;
+
+  // webカメラの設定
   navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
   if (navigator.getUserMedia) {
-    init();
+
+    // webカメラの映像を取得し、videoのDomに流し込む
+    navigator.getUserMedia({ video: true, audio: false }, webCameraSuccessCallback, console.log.bind(console));
+
+    // AR初期化
+    detector = new AR.Detector();
+    posit = new POS.Posit(modelSize, $canvas.width);
+
+    // ブラウザ描画に合わせてtickを実行
+    requestAnimationFrame(tick);
   }
 };
 
-function init() {
-  navigator.getUserMedia({ video: true, audio: false },
-    function(stream) {
-      if (window['webkitURL']) {
-        video.src = window['webkitURL'].createObjectURL(stream);
-      } else if (video.mozSrcObject !== undefined) {
-        video.mozSrcObject = stream;
-      } else {
-        video.src = stream;
-      }
-    },
-    function(error) {
-    }
-    );
-
-  detector = new AR.Detector();
-  posit = new POS.Posit(modelSize, canvas.width);
-  createRenderers();
-  createScenes();
-  requestAnimationFrame(tick);
-};
+/* 描画処理 */
 function tick() {
   requestAnimationFrame(tick);
 
-  if (video.readyState === video.HAVE_ENOUGH_DATA) {
+  if ($video.readyState === $video.HAVE_ENOUGH_DATA) {
     snapshot();
     var markers = detector.detect(imageData);
     drawCorners(markers);
-    updateScenes(markers);
-
-    render();
   }
 };
+
+/* webカメラのストリームをdomに流し込む */
+function webCameraSuccessCallback(stream) {
+  if (window['URL']) {
+    $video.src = window['URL'].createObjectURL(stream);
+  } else if ($video.mozSrcObject !== undefined) {
+    $video.mozSrcObject = stream;
+  } else {
+    $video.src = stream;
+  }
+};
+
 function snapshot() {
-  context.drawImage(video, 0, 0, canvas.width, canvas.height);
-  imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+  $context.drawImage($video, 0, 0, $canvas.width, $canvas.height);
+  imageData = $context.getImageData(0, 0, $canvas.width, $canvas.height);
 };
 
 function drawCorners(markers) {
   var corners, corner, i, j;
 
-  context.lineWidth = 3;
+  $context.lineWidth = 3;
   for (i = 0; i < markers.length; ++i) {
     corners = markers[i].corners;
 
-    context.strokeStyle = "red";
-    context.beginPath();
+    $context.strokeStyle = "red";
+    $context.beginPath();
 
     for (j = 0; j < corners.length; ++j) {
       corner = corners[j];
-      context.moveTo(corner.x, corner.y);
+      $context.moveTo(corner.x, corner.y);
       corner = corners[(j + 1) % corners.length];
-      context.lineTo(corner.x, corner.y);
+      $context.lineTo(corner.x, corner.y);
     }
-    context.stroke();
-    context.closePath();
+    $context.stroke();
+    $context.closePath();
 
-    context.strokeStyle = "green";
-    context.strokeRect(corners[0].x - 2, corners[0].y - 2, 4, 4);
+    $context.strokeStyle = "green";
+    $context.strokeRect(corners[0].x - 2, corners[0].y - 2, 4, 4);
   }
-};
-function createRenderers() {
-  renderer1 = new THREE.WebGLRenderer();
-  renderer1.setClearColor(0xffff00, 1);
-  renderer1.setSize(canvas.width, canvas.height);
-  document.getElementById("container1").appendChild(renderer1.domElement);
-  scene1 = new THREE.Scene();
-  camera1 = new THREE.PerspectiveCamera(40, canvas.width / canvas.height, 1, 1000);
-  scene1.add(camera1);
-  renderer2 = new THREE.WebGLRenderer();
-  renderer2.setClearColor(0xffff00, 1);
-  renderer2.setSize(canvas.width, canvas.height);
-  document.getElementById("container2").appendChild(renderer2.domElement);
-  scene2 = new THREE.Scene();
-  camera2 = new THREE.PerspectiveCamera(40, canvas.width / canvas.height, 1, 1000);
-  scene2.add(camera2);
-  renderer3 = new THREE.WebGLRenderer();
-  renderer3.setClearColor(0xffffff, 1);
-  renderer3.setSize(canvas.width, canvas.height);
-  document.getElementById("container").appendChild(renderer3.domElement);
-
-  scene3 = new THREE.Scene();
-  camera3 = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5);
-  scene3.add(camera3);
-
-  scene4 = new THREE.Scene();
-  camera4 = new THREE.PerspectiveCamera(40, canvas.width / canvas.height, 1, 1000);
-  scene4.add(camera4);
-};
-function render() {
-  renderer1.clear();
-  renderer1.render(scene1, camera1);
-
-  renderer2.clear();
-  renderer2.render(scene2, camera2);
-  renderer3.autoClear = false;
-  renderer3.clear();
-  renderer3.render(scene3, camera3);
-  renderer3.render(scene4, camera4);
-};
-function createScenes() {
-  plane1 = createPlane();
-  scene1.add(plane1);
-  plane2 = createPlane();
-  scene2.add(plane2);
-
-  texture = createTexture();
-  scene3.add(texture);
-
-  model = createModel();
-  scene4.add(model);
 };
 
 function createPlane() {
@@ -150,7 +98,7 @@ function createPlane() {
 };
 
 function createTexture() {
-  var texture = new THREE.Texture(video),
+  var texture = new THREE.Texture($video),
     object = new THREE.Object3D(),
     geometry = new THREE.PlaneGeometry(1.0, 1.0, 0.0),
     material = new THREE.MeshBasicMaterial({ map: texture, depthTest: false, depthWrite: false }),
@@ -173,34 +121,6 @@ function createModel() {
   object.add(mesh);
 
   return object;
-};
-function updateScenes(markers) {
-  var corners, corner, pose, i;
-
-  if (markers.length > 0) {
-    corners = markers[0].corners;
-
-    for (i = 0; i < corners.length; ++i) {
-      corner = corners[i];
-
-      corner.x = corner.x - (canvas.width / 2);
-      corner.y = (canvas.height / 2) - corner.y;
-    }
-
-    pose = posit.pose(corners);
-
-    updateObject(plane1, pose.bestRotation, pose.bestTranslation);
-    updateObject(plane2, pose.alternativeRotation, pose.alternativeTranslation);
-    updateObject(model, pose.bestRotation, pose.bestTranslation);
-    updatePose("pose1", pose.bestError, pose.bestRotation, pose.bestTranslation);
-    updatePose("pose2", pose.alternativeError, pose.alternativeRotation, pose.alternativeTranslation);
-
-    step += 0.025;
-
-    model.rotation.z -= step;
-  }
-
-  texture.children[0].material.map.needsUpdate = true;
 };
 
 function updateObject(object, rotation, translation) {
