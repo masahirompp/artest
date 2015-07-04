@@ -2,7 +2,7 @@
 
 import Marker = require('./Marker');
 
-var $video, $canvas, $context;
+var $video, $canvas, $context, $message;
 var renderer;
 var scene3, scene4;
 var camera3, camera4;
@@ -16,12 +16,26 @@ var texture;
 var step = 0.0;
 var modelSize = 35.0; //millimeters
 
+var JANKEN_GOO = {
+  name: 'グー',
+  id: 0
+};
+var JANKEN_CHOKI = {
+  name: 'チョキ',
+  id: 16
+};
+var JANKEN_PAR = {
+  name: 'パー',
+  id: 682
+};
+
 /* 画面初期化 */
 function onLoad() {
 
   // dom取得
   $video = document.getElementById("video");
   $canvas = document.getElementById("canvas");
+  $message = document.getElementById("message");
   $context = $canvas.getContext("2d");
 
   // styleからcanvasのサイズを設定
@@ -77,6 +91,7 @@ function start(detector, posit) {
       if (markers.length === 2 && !result) {
         result = judge(markers);
         console.log(result);
+        setTimeout(showMessage(result), 0);
       }
 
       render();
@@ -99,11 +114,11 @@ function start(detector, posit) {
 
         pose = posit.pose(corners);
 
-        if(i == 0){
+        if (i == 0) {
           updateObject(migipa, pose.bestRotation, pose.bestTranslation);
-        }else if(i == 1){
+        } else if (i == 1) {
           updateObject(migityoki, pose.bestRotation, pose.bestTranslation);
-        }else{
+        } else {
           updateObject(migigu, pose.bestRotation, pose.bestTranslation);
         }
 
@@ -240,90 +255,103 @@ window.onload = onLoad;
 /* Janken */
 
 function judge(markers: Marker[]) {
-  var tmp1 = markers[0].corners.reduce(addCornerX, 0); // marker1の座標
+  /*var tmp1 = markers[0].corners.reduce(addCornerX, 0); // marker1の座標
   var tmp2 = markers[1].corners.reduce(addCornerX, 0); // marker2の座標
 
   var left = tmp1 < tmp2 ? markers[0].id : markers[1].id;　// 画面左側の人の手
   var right = tmp1 > tmp2 ? markers[0].id : markers[1].id; // 画面右側の人の手
 
-  return 'left:' + left + ', right:' + right;
+  return 'left:' + left + ', right:' + right;*/
+
+  var id1 = markers[0].id;
+  var id2 = markers[1].id;
+  if (id1 === id2) {
+    return 'あいこだよ(´Д⊂ヽ';
+  }
+  if (id1 === JANKEN_GOO.id) {
+    if (id2 === JANKEN_CHOKI.id) {
+      return 'グーの勝ちだよ(・∀・)'
+    }
+    return 'パーの勝ちだよ( ≧Д≦) '
+  }
+  return 'チョキの勝ちだよヽ(ﾟ∀ﾟ)ﾒ(ﾟ∀ﾟ)ﾒ(ﾟ∀ﾟ)ﾉﾜｰｲ'
 }
 
 function addCornerX(x, corner) {
   return x + corner.x;
 }
 
-function creategu(){
-    var model = new THREE.Object3D();
-    var geometry = new THREE.SphereGeometry(1, 40, 40, Math.PI);
-    var material = new THREE.MeshPhongMaterial({ color: 0xfff1cf });
-    var cube = new THREE.Mesh( geometry, material );
-    model.add( cube );
-
-    var circleGeometry = new THREE.CylinderGeometry( 0.7, 0.7, 1,32 );
-    var circle = new THREE.Mesh( circleGeometry, material );
-    model.add( circle );
-    circle.position.x = -1
-    circle.rotation.x = 0
-    circle.rotation.y = 0
-    circle.rotation.z = 1.6
-
-    return model;
-};
-
-function createpa(){
+function creategu() {
   var model = new THREE.Object3D();
   var geometry = new THREE.SphereGeometry(1, 40, 40, Math.PI);
   var material = new THREE.MeshPhongMaterial({ color: 0xfff1cf });
-  var cube = new THREE.Mesh( geometry, material );
-  model.add( cube );
+  var cube = new THREE.Mesh(geometry, material);
+  model.add(cube);
 
-  var circleGeometry = new THREE.CylinderGeometry( 0.7, 0.7, 1,32 );
-  var circle = new THREE.Mesh( circleGeometry, material );
-  model.add( circle );
+  var circleGeometry = new THREE.CylinderGeometry(0.7, 0.7, 1, 32);
+  var circle = new THREE.Mesh(circleGeometry, material);
+  model.add(circle);
   circle.position.x = -1
   circle.rotation.x = 0
   circle.rotation.y = 0
   circle.rotation.z = 1.6
 
-  var oyayubiGeometry = new THREE.CylinderGeometry( 0.2, 0.2, 1.3, 32 );
-  var oyayubi = new THREE.Mesh( oyayubiGeometry, material );
-  model.add( oyayubi );
+  return model;
+};
+
+function createpa() {
+  var model = new THREE.Object3D();
+  var geometry = new THREE.SphereGeometry(1, 40, 40, Math.PI);
+  var material = new THREE.MeshPhongMaterial({ color: 0xfff1cf });
+  var cube = new THREE.Mesh(geometry, material);
+  model.add(cube);
+
+  var circleGeometry = new THREE.CylinderGeometry(0.7, 0.7, 1, 32);
+  var circle = new THREE.Mesh(circleGeometry, material);
+  model.add(circle);
+  circle.position.x = -1
+  circle.rotation.x = 0
+  circle.rotation.y = 0
+  circle.rotation.z = 1.6
+
+  var oyayubiGeometry = new THREE.CylinderGeometry(0.2, 0.2, 1.3, 32);
+  var oyayubi = new THREE.Mesh(oyayubiGeometry, material);
+  model.add(oyayubi);
   oyayubi.position.x = 0.4
   oyayubi.position.y = 0
   oyayubi.position.z = 1.2
   oyayubi.rotation.y = -1.0
   oyayubi.rotation.z = 1.6
 
-  var hitosasiyubiGeometry = new THREE.CylinderGeometry( 0.2, 0.2, 2.3, 32 );
-  var hitosasiyubi = new THREE.Mesh( hitosasiyubiGeometry, material );
-  model.add( hitosasiyubi );
+  var hitosasiyubiGeometry = new THREE.CylinderGeometry(0.2, 0.2, 2.3, 32);
+  var hitosasiyubi = new THREE.Mesh(hitosasiyubiGeometry, material);
+  model.add(hitosasiyubi);
   hitosasiyubi.position.x = 1
   hitosasiyubi.position.y = 0
   hitosasiyubi.position.z = 0.6
   hitosasiyubi.rotation.y = -0.4
   hitosasiyubi.rotation.z = 1.6
 
-  var nakayubiGeometry = new THREE.CylinderGeometry( 0.2, 0.2, 3, 32 );
-  var nakayubi = new THREE.Mesh( nakayubiGeometry, material );
-  model.add( nakayubi );
+  var nakayubiGeometry = new THREE.CylinderGeometry(0.2, 0.2, 3, 32);
+  var nakayubi = new THREE.Mesh(nakayubiGeometry, material);
+  model.add(nakayubi);
   nakayubi.position.x = 1
   nakayubi.position.y = 0
   nakayubi.position.z = 0
   nakayubi.rotation.z = 1.6
 
-  var kusuriyubiGeometry = new THREE.CylinderGeometry( 0.2, 0.2, 2.3, 32 );
-  var kusuriyubi = new THREE.Mesh( kusuriyubiGeometry, material );
-  model.add( kusuriyubi );
+  var kusuriyubiGeometry = new THREE.CylinderGeometry(0.2, 0.2, 2.3, 32);
+  var kusuriyubi = new THREE.Mesh(kusuriyubiGeometry, material);
+  model.add(kusuriyubi);
   kusuriyubi.position.x = 1
   kusuriyubi.position.y = 0
   kusuriyubi.position.z = -0.6
   kusuriyubi.rotation.y = 0.6
   kusuriyubi.rotation.z = 1.6
 
-  var koyubiiGeometry = new THREE.CylinderGeometry( 0.2, 0.2, 2.3, 32 );
-  var koyubii = new THREE.Mesh( koyubiiGeometry, material );
-  model.add( koyubii );
+  var koyubiiGeometry = new THREE.CylinderGeometry(0.2, 0.2, 2.3, 32);
+  var koyubii = new THREE.Mesh(koyubiiGeometry, material);
+  model.add(koyubii);
   koyubii.position.x = 0.2
   koyubii.position.y = 0
   koyubii.position.z = -0.6
@@ -333,37 +361,41 @@ function createpa(){
   return model;
 }
 
-function createtyoki(){
-    var model = new THREE.Object3D();
-    var geometry = new THREE.SphereGeometry(1, 40, 40, Math.PI);
-    var material = new THREE.MeshPhongMaterial({ color: 0xfff1cf });
-    var cube = new THREE.Mesh( geometry, material );
-    model.add( cube );
+function createtyoki() {
+  var model = new THREE.Object3D();
+  var geometry = new THREE.SphereGeometry(1, 40, 40, Math.PI);
+  var material = new THREE.MeshPhongMaterial({ color: 0xfff1cf });
+  var cube = new THREE.Mesh(geometry, material);
+  model.add(cube);
 
-    var circleGeometry = new THREE.CylinderGeometry( 0.7, 0.7, 1,32 );
-    var circle = new THREE.Mesh( circleGeometry, material );
-    model.add( circle );
-    circle.position.x = -1
-    circle.rotation.x = 0
-    circle.rotation.y = 0
-    circle.rotation.z = 1.6
+  var circleGeometry = new THREE.CylinderGeometry(0.7, 0.7, 1, 32);
+  var circle = new THREE.Mesh(circleGeometry, material);
+  model.add(circle);
+  circle.position.x = -1
+  circle.rotation.x = 0
+  circle.rotation.y = 0
+  circle.rotation.z = 1.6
 
-    var hitosasiyubiGeometry = new THREE.CylinderGeometry( 0.2, 0.2, 2.3, 32 );
-    var hitosasiyubi = new THREE.Mesh( hitosasiyubiGeometry, material );
-    model.add( hitosasiyubi );
-    hitosasiyubi.position.x = 1
-    hitosasiyubi.position.y = 0
-    hitosasiyubi.position.z = 0.6
-    hitosasiyubi.rotation.y = -0.4
-    hitosasiyubi.rotation.z = 1.6
+  var hitosasiyubiGeometry = new THREE.CylinderGeometry(0.2, 0.2, 2.3, 32);
+  var hitosasiyubi = new THREE.Mesh(hitosasiyubiGeometry, material);
+  model.add(hitosasiyubi);
+  hitosasiyubi.position.x = 1
+  hitosasiyubi.position.y = 0
+  hitosasiyubi.position.z = 0.6
+  hitosasiyubi.rotation.y = -0.4
+  hitosasiyubi.rotation.z = 1.6
 
-    var nakayubiGeometry = new THREE.CylinderGeometry( 0.2, 0.2, 3, 32 );
-    var nakayubi = new THREE.Mesh( nakayubiGeometry, material );
-    model.add( nakayubi );
-    nakayubi.position.x = 1
-    nakayubi.position.y = 0
-    nakayubi.position.z = 0
-    nakayubi.rotation.z = 1.6
+  var nakayubiGeometry = new THREE.CylinderGeometry(0.2, 0.2, 3, 32);
+  var nakayubi = new THREE.Mesh(nakayubiGeometry, material);
+  model.add(nakayubi);
+  nakayubi.position.x = 1
+  nakayubi.position.y = 0
+  nakayubi.position.z = 0
+  nakayubi.rotation.z = 1.6
 
-    return model;
+  return model;
+}
+
+function showMessage(message){
+  $message.innerHTML = '<h1 class="center">' + message + '</h1>';
 }
