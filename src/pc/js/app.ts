@@ -4,6 +4,7 @@ import Marker = require('./Marker');
 
 var $video, $canvas, $context, $message, $retry;
 var renderer;
+var result = null;
 var scene3, scene4;
 var camera3, camera4;
 var hidarigu = creategu();
@@ -39,6 +40,12 @@ $retry = document.getElementById("retry");
 function onLoad() {
 
   $retry.style.display = 'none';
+  $retry.onclick = function(e){
+    e.preventDefault();
+    result = null;
+    $message.innerHTML = '';
+    $retry.style.display = 'none';
+  }
 
   $context = $canvas.getContext("2d");
 
@@ -81,7 +88,6 @@ function onLoad() {
 function start(detector, posit) {
 
   /* 各反復の処理 */
-  var result = null;
   function tick() {
     requestAnimationFrame(tick);
 
