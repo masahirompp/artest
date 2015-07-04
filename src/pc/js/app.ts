@@ -19,8 +19,8 @@ function onLoad() {
   $context = $canvas.getContext("2d");
 
   // styleからcanvasのサイズを設定
-  $canvas.width = parseInt($canvas.style.width);
-  $canvas.height = parseInt($canvas.style.height);
+  $canvas.width = 640;
+  $canvas.height = 480;
 
   // webカメラの設定
   navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
