@@ -2,7 +2,7 @@
 
 import Marker = require('./Marker');
 
-var $video, $canvas, $context, $message;
+var $video, $canvas, $context, $message, $retry;
 var renderer;
 var scene3, scene4;
 var camera3, camera4;
@@ -29,13 +29,17 @@ var JANKEN_PAR = {
   id: 682
 };
 
+// dom取得
+$video = document.getElementById("video");
+$canvas = document.getElementById("canvas");
+$message = document.getElementById("message");
+$retry = document.getElementById("retry");
+
 /* 画面初期化 */
 function onLoad() {
 
-  // dom取得
-  $video = document.getElementById("video");
-  $canvas = document.getElementById("canvas");
-  $message = document.getElementById("message");
+  $retry.style.display = 'none';
+
   $context = $canvas.getContext("2d");
 
   // styleからcanvasのサイズを設定
@@ -398,4 +402,5 @@ function createtyoki() {
 
 function showMessage(message){
   $message.innerHTML = '<h1 class="center">' + message + '</h1>';
+  $retry.style.display = 'block';
 }

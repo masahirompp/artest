@@ -1,19 +1,21 @@
 .hidden {
   display: none;
 }
-
 .outer {
   display: block;
   width: 640px;
   height: 480px;
   margin: auto;
 }
-
 .main {
   width: 100%;
   height: 100%;
 }
-
 .center {
   text-align: center;
+  margin: auto;
+}
+.box{
+  margin-top: 1em;
+  margin-bottom: 1em;
 }
