@@ -5,11 +5,6 @@ import THREE = require('three');
 console.log('test');
 
 var $video, $canvas, $context, imageData, detector, posit;
-var renderer;
-var scene3, scene4;
-var camera3, camera4;
-var model, texture;
-var step = 0.0;
 var modelSize = 35.0; //millimeters
 
 /* 画面初期化 */
@@ -29,27 +24,11 @@ function onLoad() {
   if (navigator.getUserMedia) {
 
     // webカメラの映像を取得し、videoのDomに流し込む
-    navigator.getUserMedia({ video: true, audio: false },
-      /* webcamera取得成功時のコールバック */
-      function(stream) {
-        if (window['webkitURL']) {
-          $video.src = window['webkitURL'].createObjectURL(stream);
-        } else if ($video.mozSrcObject !== undefined) {
-          $video.mozSrcObject = stream;
-        } else {
-          $video.src = stream;
-        }
-      },
-      /* webカメラ取得失敗時のコールバック */
-      function(error) {
-        console.log(error);
-      });
+    navigator.getUserMedia({ video: true, audio: false }, webCameraSuccessCallback, console.log.bind(console));
 
     // AR初期化
     detector = new AR.Detector();
     posit = new POS.Posit(modelSize, $canvas.width);
-    createRenderers();
-    createScenes();
 
     // ブラウザ描画に合わせてtickを実行
     requestAnimationFrame(tick);
@@ -64,9 +43,17 @@ function tick() {
     snapshot();
     var markers = detector.detect(imageData);
     drawCorners(markers);
-    updateScenes(markers);
+  }
+};
 
-    render();
+/* webカメラのストリームをdomに流し込む */
+function webCameraSuccessCallback(stream) {
+  if (window['URL']) {
+    $video.src = window['URL'].createObjectURL(stream);
+  } else if ($video.mozSrcObject !== undefined) {
+    $video.mozSrcObject = stream;
+  } else {
+    $video.src = stream;
   }
 };
 
@@ -97,34 +84,6 @@ function drawCorners(markers) {
     $context.strokeStyle = "green";
     $context.strokeRect(corners[0].x - 2, corners[0].y - 2, 4, 4);
   }
-};
-function createRenderers() {
-  renderer = new THREE.WebGLRenderer();
-  renderer.setClearColor(0xffffff, 1);
-  renderer.setSize($canvas.width, $canvas.height);
-  document.getElementById("container").appendChild(renderer.domElement);
-
-  scene3 = new THREE.Scene();
-  camera3 = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5);
-  scene3.add(camera3);
-
-  scene4 = new THREE.Scene();
-  camera4 = new THREE.PerspectiveCamera(40, $canvas.width / $canvas.height, 1, 1000);
-  scene4.add(camera4);
-};
-function render() {
-  renderer.autoClear = false;
-  renderer.clear();
-  renderer.render(scene3, camera3);
-  renderer.render(scene4, camera4);
-};
-function createScenes() {
-
-  texture = createTexture();
-  scene3.add(texture);
-
-  model = createModel();
-  scene4.add(model);
 };
 
 function createPlane() {
@@ -162,30 +121,6 @@ function createModel() {
   object.add(mesh);
 
   return object;
-};
-function updateScenes(markers) {
-  var corners, corner, pose, i;
-
-  if (markers.length > 0) {
-    corners = markers[0].corners;
-
-    for (i = 0; i < corners.length; ++i) {
-      corner = corners[i];
-
-      corner.x = corner.x - ($canvas.width / 2);
-      corner.y = ($canvas.height / 2) - corner.y;
-    }
-
-    pose = posit.pose(corners);
-
-    updateObject(model, pose.bestRotation, pose.bestTranslation);
-
-    step += 0.025;
-
-    model.rotation.z -= step;
-  }
-
-  texture.children[0].material.map.needsUpdate = true;
 };
 
 function updateObject(object, rotation, translation) {
